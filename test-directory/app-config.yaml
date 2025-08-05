@@ -1,0 +1,17 @@
+name: MyApplication
+version: 2.2.0
+environment: production
+features:
+  - logging
+  - monitoring
+  - caching
+  - analytics
+database:
+  host: db.example.com
+  port: 5432
+  ssl: true
+  maxConnections: 100
+cache:
+  enabled: true
+  ttl: 7200
+  maxSize: 1000

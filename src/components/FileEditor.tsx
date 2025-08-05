@@ -76,11 +76,11 @@ export const FileEditor: React.FC<FileEditorProps> = ({
   }
 
   return (
-    <div className="flex-1 flex">
-      {/* Form Editor */}
-      <div className="flex-1 overflow-y-auto p-6">
+    <div className="flex-1 flex flex-col h-full">
+      {/* Header - Fixed */}
+      <div className="flex-shrink-0 p-6 border-b border-gray-700">
         <div className="max-w-4xl mx-auto">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center justify-between">
             <div>
               <h2 className="text-xl font-semibold text-white mb-1">{file.name}</h2>
               <p className="text-gray-400 text-sm">{file.path}</p>
@@ -106,42 +106,49 @@ export const FileEditor: React.FC<FileEditorProps> = ({
               </button>
             </div>
           </div>
+        </div>
+      </div>
 
-          {/* Schema Form */}
-          <div className="bg-gray-800 rounded-lg p-6">
-            <h3 className="text-lg font-medium text-white mb-4">{schema.title || 'Configuration'}</h3>
-            {schema.description && (
-              <p className="text-gray-400 mb-6">{schema.description}</p>
-            )}
+      {/* Content - Scrollable */}
+      <div className="flex-1 overflow-y-auto">
+        <div className="p-6">
+          <div className="max-w-4xl mx-auto">
+            {/* Schema Form */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-medium text-white mb-4">{schema.title || 'Configuration'}</h3>
+              {schema.description && (
+                <p className="text-gray-400 mb-6">{schema.description}</p>
+              )}
 
-            <div className="space-y-6">
-              {Object.entries(schema.properties).map(([key, property]) => (
-                <FormField
-                  key={key}
-                  name={key}
-                  property={property}
-                  value={content[key]}
-                  onChange={(value) => handleFieldChange(key, value)}
-                  required={schema.required?.includes(key) || false}
-                  errors={errors.filter(e => e.path.startsWith(key))}
-                />
-              ))}
-            </div>
-          </div>
-
-          {/* Validation Errors */}
-          {errors.length > 0 && (
-            <div className="mt-6 bg-red-900/20 border border-red-700 rounded-lg p-4">
-              <h4 className="text-red-400 font-medium mb-2">Validation Errors</h4>
-              <ul className="space-y-1">
-                {errors.map((error, index) => (
-                  <li key={index} className="text-red-300 text-sm">
-                    <span className="font-mono">{error.path}</span>: {error.message}
-                  </li>
+              <div className="space-y-6">
+                {Object.entries(schema.properties).map(([key, property]) => (
+                  <FormField
+                    key={key}
+                    name={key}
+                    property={property}
+                    value={content[key]}
+                    onChange={(value) => handleFieldChange(key, value)}
+                    required={schema.required?.includes(key) || false}
+                    errors={errors.filter(e => e.path.startsWith(key))}
+                  />
                 ))}
-              </ul>
+              </div>
             </div>
-          )}
+
+            {/* Validation Errors */}
+            {errors.length > 0 && (
+              <div className="mt-6 bg-red-900/20 border border-red-700 rounded-lg p-4">
+                <h4 className="text-red-400 font-medium mb-2">Validation Errors</h4>
+                <ul className="space-y-1">
+                  {errors.map((error, index) => (
+                    <li key={index} className="text-red-300 text-sm">
+                      <span className="font-mono">{error.path}</span>: {error.message}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

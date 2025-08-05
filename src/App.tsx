@@ -1,48 +1,61 @@
 import React, { useState } from 'react';
 import { Sidebar } from './components/Sidebar';
 import { MainContent } from './components/MainContent';
-import { Repository, YamlFile, GitStatus } from './types';
-import { mockRepository, mockSchema } from './data/mockData';
+import { DirectorySelector } from './components/DirectorySelector';
+import { LocalDirectory, YamlFile, FileStatus } from './types';
 import { stringifyYaml } from './utils/yamlUtils';
 
 function App() {
-  const [currentRepository, setCurrentRepository] = useState<Repository | null>(mockRepository);
+  const [currentDirectory, setCurrentDirectory] = useState<LocalDirectory | null>(null);
   const [selectedFile, setSelectedFile] = useState<YamlFile | null>(null);
-  const [gitStatus, setGitStatus] = useState<GitStatus>({
-    currentBranch: 'main',
+  const [fileStatus, setFileStatus] = useState<FileStatus>({
     hasChanges: false,
     changedFiles: [],
     newFiles: []
   });
-  const [isConnected, setIsConnected] = useState(true);
+
+  const handleDirectorySelect = (directory: LocalDirectory) => {
+    setCurrentDirectory(directory);
+    setSelectedFile(null);
+    setFileStatus({
+      hasChanges: false,
+      changedFiles: [],
+      newFiles: []
+    });
+  };
 
   const handleFileSelect = (file: YamlFile) => {
     setSelectedFile(file);
   };
 
   const handleFileChange = (fileId: string, newYamlContent: string) => {
-    if (!currentRepository) return;
+    if (!currentDirectory) return;
     
-    setCurrentRepository(prev => {
+    setCurrentDirectory(prev => {
       if (!prev) return prev;
       
       const updatedFiles = prev.files.map(file => 
-        file.id === fileId ? { ...file, content: newYamlContent, modified: true } : file
+        file.id === fileId ? { 
+          ...file, 
+          content: newYamlContent, 
+          modified: true,
+          originalContent: file.originalContent || file.content
+        } : file
       );
       
       return { ...prev, files: updatedFiles };
     });
 
-    // Update git status
-    setGitStatus(prev => ({
+    // Update file status
+    setFileStatus(prev => ({
       ...prev,
       hasChanges: true,
       changedFiles: [...new Set([...prev.changedFiles, fileId])]
     }));
   };
 
-  const handleCreateFile = (fileName: string) => {
-    if (!currentRepository) return;
+  const handleCreateFile = async (fileName: string) => {
+    if (!currentDirectory) return;
 
     const newFile: YamlFile = {
       id: `new-${Date.now()}`,
@@ -53,12 +66,12 @@ function App() {
       isNew: true
     };
 
-    setCurrentRepository(prev => {
+    setCurrentDirectory(prev => {
       if (!prev) return prev;
       return { ...prev, files: [...prev.files, newFile] };
     });
 
-    setGitStatus(prev => ({
+    setFileStatus(prev => ({
       ...prev,
       hasChanges: true,
       newFiles: [...prev.newFiles, newFile.id]
@@ -67,24 +80,147 @@ function App() {
     setSelectedFile(newFile);
   };
 
+  const handleApproveChanges = () => {
+    // Reset file status after approval
+    setFileStatus({
+      hasChanges: false,
+      changedFiles: [],
+      newFiles: []
+    });
+
+    // Update files to mark them as not modified and update their file handles
+    setCurrentDirectory(prev => {
+      if (!prev) return prev;
+      
+      const updatedFiles = prev.files.map(file => {
+        if (file.isNew) {
+          // For new files, we need to get their file handle after they're created
+          // This will be handled by the ApprovalPanel when it creates the file
+          return {
+            ...file,
+            modified: false,
+            isNew: false,
+            originalContent: file.content // Update original content to current content
+          };
+        } else if (file.modified) {
+          return {
+            ...file,
+            modified: false,
+            originalContent: file.content // Update original content to current content
+          };
+        }
+        return file;
+      });
+      
+      return { ...prev, files: updatedFiles };
+    });
+  };
+
+  const handleDiscardChanges = () => {
+    // Reset file status
+    setFileStatus({
+      hasChanges: false,
+      changedFiles: [],
+      newFiles: []
+    });
+
+    // Revert all files to their original content
+    setCurrentDirectory(prev => {
+      if (!prev) return prev;
+      
+      const updatedFiles = prev.files.map(file => {
+        if (file.modified && file.originalContent !== undefined) {
+          return {
+            ...file,
+            content: file.originalContent,
+            modified: false,
+            isNew: false
+          };
+        }
+        return file;
+      }).filter(file => !file.isNew); // Remove new files
+      
+      return { ...prev, files: updatedFiles };
+    });
+
+    // Clear selected file if it was a new file
+    setSelectedFile(prev => {
+      if (prev && prev.isNew) {
+        return null;
+      }
+      return prev;
+    });
+  };
+
+  const handleDiscardFile = (fileId: string) => {
+    if (!currentDirectory) return;
+
+    setCurrentDirectory(prev => {
+      if (!prev) return prev;
+      
+      const updatedFiles = prev.files.map(file => {
+        if (file.id === fileId) {
+          if (file.isNew) {
+            return null; // Remove new files
+          } else if (file.modified && file.originalContent !== undefined) {
+            return {
+              ...file,
+              content: file.originalContent,
+              modified: false
+            };
+          }
+        }
+        return file;
+      }).filter(Boolean) as YamlFile[]; // Remove null entries
+      
+      return { ...prev, files: updatedFiles };
+    });
+
+    // Update file status
+    setFileStatus(prev => ({
+      ...prev,
+      changedFiles: prev.changedFiles.filter(id => id !== fileId),
+      newFiles: prev.newFiles.filter(id => id !== fileId),
+      hasChanges: (prev.changedFiles.filter(id => id !== fileId).length + 
+                   prev.newFiles.filter(id => id !== fileId).length) > 0
+    }));
+
+    // Clear selected file if it was discarded
+    setSelectedFile(prev => {
+      if (prev && prev.id === fileId) {
+        return null;
+      }
+      return prev;
+    });
+  };
+
+  // Show directory selector if no directory is loaded
+  if (!currentDirectory) {
+    return (
+      <div className="h-screen bg-gray-900 text-white flex overflow-hidden">
+        <DirectorySelector onDirectorySelect={handleDirectorySelect} />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen bg-gray-900 text-white flex overflow-hidden">
       <Sidebar
-        repository={currentRepository}
+        directory={currentDirectory}
         selectedFile={selectedFile}
         onFileSelect={handleFileSelect}
         onCreateFile={handleCreateFile}
-        gitStatus={gitStatus}
-        isConnected={isConnected}
-        onConnect={() => setIsConnected(true)}
+        fileStatus={fileStatus}
       />
       <MainContent
-        repository={currentRepository}
+        directory={currentDirectory}
         selectedFile={selectedFile}
-        schema={mockSchema}
         onFileChange={handleFileChange}
-        gitStatus={gitStatus}
-        onGitStatusChange={setGitStatus}
+        fileStatus={fileStatus}
+        onFileStatusChange={setFileStatus}
+        onApproveChanges={handleApproveChanges}
+        onDiscardChanges={handleDiscardChanges}
+        onDiscardFile={handleDiscardFile}
       />
     </div>
   );

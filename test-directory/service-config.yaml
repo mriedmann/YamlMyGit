@@ -1,0 +1,21 @@
+name: UserService
+version: 1.6.0
+environment: staging
+description: User management and authentication service
+features:
+  - authentication
+  - authorization
+  - user-management
+  - password-reset
+database:
+  host: staging-db.example.com
+  port: 5432
+  ssl: false
+  maxConnections: 50
+cache:
+  enabled: true
+  ttl: 1800
+  maxSize: 500
+logging:
+  level: info
+  format: json 

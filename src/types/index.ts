@@ -1,9 +1,10 @@
-export interface Repository {
+export interface LocalDirectory {
   id: string;
   name: string;
-  url: string;
-  localPath: string;
+  path: string;
   files: YamlFile[];
+  schema: JsonSchema;
+  directoryHandle?: FileSystemDirectoryHandle; // File System Access API handle
 }
 
 export interface YamlFile {
@@ -11,12 +12,13 @@ export interface YamlFile {
   name: string;
   path: string;
   content: string; // YAML string content
+  originalContent?: string; // Original content for diff comparison
   modified?: boolean;
   isNew?: boolean;
+  fileHandle?: FileSystemFileHandle; // File System Access API handle for the file
 }
 
-export interface GitStatus {
-  currentBranch: string;
+export interface FileStatus {
   hasChanges: boolean;
   changedFiles: string[];
   newFiles: string[];
@@ -51,10 +53,9 @@ export interface ValidationError {
   message: string;
 }
 
-export interface CommitInfo {
-  message: string;
-  branch: string;
-  createMergeRequest: boolean;
-  mergeRequestTitle?: string;
-  mergeRequestDescription?: string;
+export interface DirectoryInfo {
+  path: string;
+  name: string;
+  yamlFiles: string[];
+  hasSchema: boolean;
 }

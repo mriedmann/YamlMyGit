@@ -1,0 +1,120 @@
+{
+  "type": "object",
+  "title": "Application Configuration",
+  "description": "Configuration schema for application services",
+  "required": ["name", "version", "environment"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "title": "Application Name",
+      "description": "The name of the application or service",
+      "minLength": 1,
+      "maxLength": 100
+    },
+    "version": {
+      "type": "string",
+      "title": "Version",
+      "description": "Semantic version of the application",
+      "format": "version"
+    },
+    "environment": {
+      "type": "string",
+      "title": "Environment",
+      "description": "Target deployment environment",
+      "enum": ["development", "staging", "production"]
+    },
+    "description": {
+      "type": "string",
+      "title": "Description",
+      "description": "Detailed description of the service"
+    },
+    "features": {
+      "type": "array",
+      "title": "Features",
+      "description": "List of enabled features",
+      "items": {
+        "type": "string"
+      }
+    },
+    "database": {
+      "type": "object",
+      "title": "Database Configuration",
+      "description": "Database connection settings",
+      "required": ["host", "port"],
+      "properties": {
+        "host": {
+          "type": "string",
+          "title": "Host",
+          "description": "Database host address"
+        },
+        "port": {
+          "type": "integer",
+          "title": "Port",
+          "description": "Database port number",
+          "minimum": 1,
+          "maximum": 65535,
+          "default": 5432
+        },
+        "ssl": {
+          "type": "boolean",
+          "title": "SSL Enabled",
+          "description": "Enable SSL connection",
+          "default": true
+        },
+        "maxConnections": {
+          "type": "integer",
+          "title": "Max Connections",
+          "description": "Maximum number of database connections",
+          "minimum": 1,
+          "default": 10
+        }
+      }
+    },
+    "cache": {
+      "type": "object",
+      "title": "Cache Configuration",
+      "description": "Caching system settings",
+      "properties": {
+        "enabled": {
+          "type": "boolean",
+          "title": "Cache Enabled",
+          "description": "Enable caching system",
+          "default": false
+        },
+        "ttl": {
+          "type": "integer",
+          "title": "TTL (seconds)",
+          "description": "Time to live for cached items",
+          "minimum": 0,
+          "default": 3600
+        },
+        "maxSize": {
+          "type": "integer",
+          "title": "Max Size",
+          "description": "Maximum number of cached items",
+          "minimum": 1,
+          "default": 100
+        }
+      }
+    },
+    "logging": {
+      "type": "object",
+      "title": "Logging Configuration",
+      "description": "Application logging settings",
+      "properties": {
+        "level": {
+          "type": "string",
+          "title": "Log Level",
+          "description": "Minimum log level to record",
+          "enum": ["debug", "info", "warn", "error"]
+        },
+        "format": {
+          "type": "string",
+          "title": "Log Format",
+          "description": "Output format for log messages",
+          "enum": ["json", "text", "structured"]
+        }
+      }
+    }
+  }
+} 

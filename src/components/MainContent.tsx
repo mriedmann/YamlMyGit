@@ -1,36 +1,44 @@
 import React, { useState } from 'react';
 import { FileEditor } from './FileEditor';
 import { DiffViewer } from './DiffViewer';
-import { CommitPanel } from './CommitPanel';
-import { Repository, YamlFile, JsonSchema, GitStatus } from '../types';
+import { ApprovalPanel } from './ApprovalPanel';
+import { LocalDirectory, YamlFile, JsonSchema, FileStatus } from '../types';
 
 interface MainContentProps {
-  repository: Repository | null;
+  directory: LocalDirectory | null;
   selectedFile: YamlFile | null;
-  schema: JsonSchema;
   onFileChange: (fileId: string, content: any) => void;
-  gitStatus: GitStatus;
-  onGitStatusChange: (status: GitStatus) => void;
+  fileStatus: FileStatus;
+  onFileStatusChange: (status: FileStatus) => void;
+  onApproveChanges: () => void;
+  onDiscardChanges: () => void;
+  onDiscardFile?: (fileId: string) => void;
 }
 
-type ViewMode = 'edit' | 'diff' | 'commit';
+type ViewMode = 'edit' | 'diff' | 'approve';
 
 export const MainContent: React.FC<MainContentProps> = ({
-  repository,
+  directory,
   selectedFile,
-  schema,
   onFileChange,
-  gitStatus,
-  onGitStatusChange
+  fileStatus,
+  onFileStatusChange,
+  onApproveChanges,
+  onDiscardChanges,
+  onDiscardFile
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('edit');
 
-  if (!repository) {
+  const handleJumpToEdit = () => {
+    setViewMode('edit');
+  };
+
+  if (!directory) {
     return (
       <div className="flex-1 flex items-center justify-center bg-gray-900">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-gray-400 mb-2">No Repository Connected</h2>
-          <p className="text-gray-500">Connect to a GitLab repository to get started</p>
+          <h2 className="text-xl font-semibold text-gray-400 mb-2">No Directory Loaded</h2>
+          <p className="text-gray-500">Select a local directory to get started</p>
         </div>
       </div>
     );
@@ -58,20 +66,20 @@ export const MainContent: React.FC<MainContentProps> = ({
                 ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-gray-700'
             }`}
-            disabled={!gitStatus.hasChanges}
+            disabled={!fileStatus.hasChanges}
           >
-            Diff {gitStatus.hasChanges && `(${gitStatus.changedFiles.length + gitStatus.newFiles.length})`}
+            Diff {fileStatus.hasChanges && `(${fileStatus.changedFiles.length + fileStatus.newFiles.length})`}
           </button>
           <button
-            onClick={() => setViewMode('commit')}
+            onClick={() => setViewMode('approve')}
             className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
-              viewMode === 'commit'
+              viewMode === 'approve'
                 ? 'bg-blue-600 text-white'
                 : 'text-gray-400 hover:text-white hover:bg-gray-700'
             }`}
-            disabled={!gitStatus.hasChanges}
+            disabled={!fileStatus.hasChanges}
           >
-            Commit
+            Approve Changes
           </button>
         </div>
       </div>
@@ -81,21 +89,24 @@ export const MainContent: React.FC<MainContentProps> = ({
         {viewMode === 'edit' && (
           <FileEditor
             file={selectedFile}
-            schema={schema}
+            schema={directory.schema}
             onFileChange={onFileChange}
           />
         )}
         {viewMode === 'diff' && (
           <DiffViewer
-            repository={repository}
-            gitStatus={gitStatus}
+            directory={directory}
+            fileStatus={fileStatus}
+            onDiscardFile={onDiscardFile}
           />
         )}
-        {viewMode === 'commit' && (
-          <CommitPanel
-            repository={repository}
-            gitStatus={gitStatus}
-            onGitStatusChange={onGitStatusChange}
+        {viewMode === 'approve' && (
+          <ApprovalPanel
+            directory={directory}
+            fileStatus={fileStatus}
+            onApproveChanges={onApproveChanges}
+            onDiscardChanges={onDiscardChanges}
+            onJumpToEdit={handleJumpToEdit}
           />
         )}
       </div>

@@ -1,7 +1,8 @@
 {
-  "name": "vite-react-typescript-starter",
+  "name": "yaml-my-git",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "A modern web application for editing YAML configuration files using local directories and JSON schemas",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -31,5 +32,21 @@
     "typescript": "^5.5.3",
     "typescript-eslint": "^8.3.0",
     "vite": "^5.4.2"
-  }
+  },
+  "keywords": [
+    "yaml",
+    "editor",
+    "file-system-access-api",
+    "react",
+    "typescript",
+    "json-schema",
+    "configuration"
+  ],
+  "author": "YAML My Git Contributors",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/[your-username]/YamlMyGit.git"
+  },
+  "homepage": "https://[your-username].github.io/YamlMyGit/"
 }

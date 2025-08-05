@@ -3,32 +3,25 @@ import {
   FolderOpen, 
   File, 
   Plus, 
-  GitBranch, 
-  Wifi, 
-  WifiOff, 
   Circle,
   Dot
 } from 'lucide-react';
-import { Repository, YamlFile, GitStatus } from '../types';
+import { LocalDirectory, YamlFile, FileStatus } from '../types';
 
 interface SidebarProps {
-  repository: Repository | null;
+  directory: LocalDirectory | null;
   selectedFile: YamlFile | null;
   onFileSelect: (file: YamlFile) => void;
   onCreateFile: (fileName: string) => void;
-  gitStatus: GitStatus;
-  isConnected: boolean;
-  onConnect: () => void;
+  fileStatus: FileStatus;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
-  repository,
+  directory,
   selectedFile,
   onFileSelect,
   onCreateFile,
-  gitStatus,
-  isConnected,
-  onConnect
+  fileStatus
 }) => {
   const [showCreateFile, setShowCreateFile] = useState(false);
   const [newFileName, setNewFileName] = useState('');
@@ -54,31 +47,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
       {/* Header */}
       <div className="p-4 border-b border-gray-700">
         <div className="flex items-center justify-between mb-3">
-          <h2 className="text-lg font-semibold text-white">Repository</h2>
-          <div className="flex items-center space-x-2">
-            {isConnected ? (
-              <Wifi className="w-4 h-4 text-green-400" />
-            ) : (
-              <WifiOff className="w-4 h-4 text-red-400" />
-            )}
-          </div>
+          <h2 className="text-lg font-semibold text-white">Directory</h2>
         </div>
         
-        {repository && (
+        {directory && (
           <div className="space-y-2">
             <div className="flex items-center space-x-2">
               <FolderOpen className="w-4 h-4 text-blue-400" />
-              <span className="text-sm text-gray-300 truncate">{repository.name}</span>
+              <span className="text-sm text-gray-300 truncate">{directory.name}</span>
             </div>
-            <div className="flex items-center space-x-2">
-              <GitBranch className="w-4 h-4 text-purple-400" />
-              <span className="text-sm text-gray-300">{gitStatus.currentBranch}</span>
-              {gitStatus.hasChanges && (
-                <span className="text-xs bg-orange-500 text-white px-2 py-1 rounded">
-                  {gitStatus.changedFiles.length + gitStatus.newFiles.length} changes
-                </span>
-              )}
+            <div className="text-sm text-gray-400">
+              {directory.files.length} YAML file{directory.files.length !== 1 ? 's' : ''}
             </div>
+            {fileStatus.hasChanges && (
+              <div className="text-xs bg-orange-500 text-white px-2 py-1 rounded">
+                {fileStatus.changedFiles.length + fileStatus.newFiles.length} changes
+              </div>
+            )}
           </div>
         )}
       </div>
@@ -129,7 +114,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
 
           <div className="space-y-1">
-            {repository?.files.map((file) => (
+            {directory?.files.map((file) => (
               <button
                 key={file.id}
                 onClick={() => onFileSelect(file)}
@@ -151,19 +136,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
       </div>
 
-      {/* Git Status */}
-      {gitStatus.hasChanges && (
+      {/* File Status */}
+      {fileStatus.hasChanges && (
         <div className="p-4 border-t border-gray-700">
           <h3 className="text-sm font-medium text-gray-400 mb-2">Changes</h3>
           <div className="space-y-1 text-sm">
-            {gitStatus.newFiles.length > 0 && (
+            {fileStatus.newFiles.length > 0 && (
               <div className="text-green-400">
-                + {gitStatus.newFiles.length} new file{gitStatus.newFiles.length !== 1 ? 's' : ''}
+                + {fileStatus.newFiles.length} new file{fileStatus.newFiles.length !== 1 ? 's' : ''}
               </div>
             )}
-            {gitStatus.changedFiles.length > 0 && (
+            {fileStatus.changedFiles.length > 0 && (
               <div className="text-orange-400">
-                ~ {gitStatus.changedFiles.length} modified file{gitStatus.changedFiles.length !== 1 ? 's' : ''}
+                ~ {fileStatus.changedFiles.length} modified file{fileStatus.changedFiles.length !== 1 ? 's' : ''}
               </div>
             )}
           </div>
