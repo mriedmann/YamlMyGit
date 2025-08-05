@@ -5,6 +5,8 @@ export interface LocalDirectory {
   files: YamlFile[];
   schema: JsonSchema;
   directoryHandle?: FileSystemDirectoryHandle; // File System Access API handle
+  gitService?: any; // Git service instance
+  gitStatus?: GitStatus; // Current git status
 }
 
 export interface YamlFile {
@@ -58,4 +60,20 @@ export interface DirectoryInfo {
   name: string;
   yamlFiles: string[];
   hasSchema: boolean;
+}
+
+// Git-related types
+export interface GitStatus {
+  isGitRepository: boolean;
+  currentBranch: string;
+  hasChanges: boolean;
+  stagedFiles: string[];
+  unstagedFiles: string[];
+  untrackedFiles: string[];
+}
+
+export interface GitCommitResult {
+  success: boolean;
+  commitHash?: string;
+  error?: string;
 }

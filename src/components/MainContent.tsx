@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { FileEditor } from './FileEditor';
 import { DiffViewer } from './DiffViewer';
 import { ApprovalPanel } from './ApprovalPanel';
+import { GitPanel } from './GitPanel';
 import { LocalDirectory, YamlFile, FileStatus } from '../types';
 
 interface MainContentProps {
@@ -12,9 +13,10 @@ interface MainContentProps {
   onApproveChanges: () => void;
   onDiscardChanges: () => void;
   onDiscardFile?: (fileId: string) => void;
+  onGitStatusUpdate?: () => void;
 }
 
-type ViewMode = 'edit' | 'diff' | 'approve';
+type ViewMode = 'edit' | 'diff' | 'approve' | 'git';
 
 export const MainContent: React.FC<MainContentProps> = ({
   directory,
@@ -23,7 +25,8 @@ export const MainContent: React.FC<MainContentProps> = ({
   fileStatus,
   onApproveChanges,
   onDiscardChanges,
-  onDiscardFile
+  onDiscardFile,
+  onGitStatusUpdate
 }) => {
   const [viewMode, setViewMode] = useState<ViewMode>('edit');
 
@@ -79,6 +82,16 @@ export const MainContent: React.FC<MainContentProps> = ({
           >
             Approve Changes
           </button>
+          <button
+            onClick={() => setViewMode('git')}
+            className={`px-4 py-2 rounded text-sm font-medium transition-colors ${
+              viewMode === 'git'
+                ? 'bg-blue-600 text-white'
+                : 'text-gray-400 hover:text-white hover:bg-gray-700'
+            }`}
+          >
+            Git
+          </button>
         </div>
       </div>
 
@@ -106,6 +119,17 @@ export const MainContent: React.FC<MainContentProps> = ({
             onDiscardChanges={onDiscardChanges}
             onJumpToEdit={handleJumpToEdit}
           />
+        )}
+        {viewMode === 'git' && (
+          <div className="p-6 overflow-auto">
+            <GitPanel
+              gitStatus={directory.gitStatus}
+              gitService={directory.gitService}
+              onGitStatusUpdate={onGitStatusUpdate || (() => {})}
+              changedFiles={fileStatus.changedFiles}
+              newFiles={fileStatus.newFiles}
+            />
+          </div>
         )}
       </div>
     </div>

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { CheckCircle, AlertTriangle, XCircle, FileText } from 'lucide-react';
+import { CheckCircle, AlertTriangle, XCircle, FileText, GitCommit } from 'lucide-react';
 import { LocalDirectory, FileStatus } from '../types';
 
 interface ApprovalPanelProps {
@@ -20,6 +20,8 @@ export const ApprovalPanel: React.FC<ApprovalPanelProps> = ({
   const [isApproving, setIsApproving] = useState(false);
   const [isDiscarding, setIsDiscarding] = useState(false);
   const [approvalMessage, setApprovalMessage] = useState('');
+  const [commitWithGit, setCommitWithGit] = useState(false);
+  const [commitMessage, setCommitMessage] = useState('');
 
   const getModifiedFiles = () => {
     return directory.files.filter(file => 
@@ -81,10 +83,37 @@ export const ApprovalPanel: React.FC<ApprovalPanelProps> = ({
       // Wait for all file writes to complete
       await Promise.all(writePromises);
 
+      // Handle git operations if requested
+      if (commitWithGit && directory.gitService && commitMessage.trim()) {
+        try {
+          // Stage all changed and new files
+          const filesToStage = [...fileStatus.changedFiles, ...fileStatus.newFiles];
+          console.log('Files to stage for git:', filesToStage);
+          
+          if (filesToStage.length > 0) {
+            const stageSuccess = await directory.gitService.stageFiles(filesToStage);
+            if (!stageSuccess) {
+              throw new Error('Failed to stage files');
+            }
+          }
+          
+          // Commit the changes
+          const commitResult = await directory.gitService.commitChanges(commitMessage.trim());
+          if (commitResult.success) {
+            setApprovalMessage(`Successfully wrote changes to ${modifiedFiles.length} file${modifiedFiles.length !== 1 ? 's' : ''} and committed to git!`);
+          } else {
+            setApprovalMessage(`Successfully wrote changes to ${modifiedFiles.length} file${modifiedFiles.length !== 1 ? 's' : ''} but git commit failed: ${commitResult.error}`);
+          }
+        } catch (error) {
+          console.error('Git operation error:', error);
+          setApprovalMessage(`Successfully wrote changes to ${modifiedFiles.length} file${modifiedFiles.length !== 1 ? 's' : ''} but git commit failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        }
+      } else {
+        setApprovalMessage(`Successfully wrote changes to ${modifiedFiles.length} file${modifiedFiles.length !== 1 ? 's' : ''}!`);
+      }
+
       // Call the parent's approval handler
       onApproveChanges();
-      
-      setApprovalMessage(`Successfully wrote changes to ${modifiedFiles.length} file${modifiedFiles.length !== 1 ? 's' : ''}!`);
       
       // Jump back to edit view after a short delay
       setTimeout(() => {
@@ -217,6 +246,47 @@ export const ApprovalPanel: React.FC<ApprovalPanelProps> = ({
               <span className={approvalMessage.includes('Error') ? 'text-red-300' : 'text-green-300'}>
                 {approvalMessage}
               </span>
+            </div>
+          </div>
+        )}
+
+        {/* Git Commit Options */}
+        {directory.gitService && (
+          <div className="bg-gray-800 rounded-lg p-6 mb-6">
+            <div className="flex items-center space-x-2 mb-4">
+              <GitCommit className="w-5 h-5 text-blue-400" />
+              <h3 className="text-lg font-medium text-white">Git Integration</h3>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex items-center space-x-3">
+                <input
+                  type="checkbox"
+                  id="commitWithGit"
+                  checked={commitWithGit}
+                  onChange={(e) => setCommitWithGit(e.target.checked)}
+                  className="w-4 h-4 text-blue-600 bg-gray-700 border-gray-600 rounded focus:ring-blue-500 focus:ring-2"
+                />
+                <label htmlFor="commitWithGit" className="text-white">
+                  Commit changes to git after writing files
+                </label>
+              </div>
+              
+              {commitWithGit && (
+                <div className="space-y-2">
+                  <label htmlFor="commitMessage" className="block text-sm font-medium text-gray-300">
+                    Commit Message
+                  </label>
+                  <textarea
+                    id="commitMessage"
+                    value={commitMessage}
+                    onChange={(e) => setCommitMessage(e.target.value)}
+                    placeholder="Enter a descriptive commit message..."
+                    rows={3}
+                    className="w-full px-3 py-2 bg-gray-700 border border-gray-600 rounded text-sm text-white placeholder-gray-400 focus:outline-none focus:border-blue-500 resize-none"
+                  />
+                </div>
+              )}
             </div>
           </div>
         )}

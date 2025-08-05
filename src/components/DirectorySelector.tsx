@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
-import { FolderOpen, Upload, AlertCircle } from 'lucide-react';
+import { FolderOpen, Upload, AlertCircle, GitBranch } from 'lucide-react';
 import { LocalDirectory, DirectoryInfo } from '../types';
+import { createGitService } from '../services/gitService';
 
 interface DirectorySelectorProps {
   onDirectorySelect: (directory: LocalDirectory) => void;
@@ -61,13 +62,30 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
         })
       );
 
+      // Initialize git service
+      const gitService = await createGitService(dirHandle);
+      let gitStatus = undefined;
+      
+      if (gitService) {
+        try {
+          // Initialize git repository if it doesn't exist
+          await gitService.initRepository();
+          gitStatus = await gitService.getStatus();
+        } catch (error) {
+          console.warn('Git initialization failed, continuing without git support:', error);
+          // Continue without git support
+        }
+      }
+
       const directory: LocalDirectory = {
         id: directoryInfo.path,
         name: directoryInfo.name,
         path: directoryInfo.path,
         files,
         schema,
-        directoryHandle: dirHandle // Store the directory handle
+        directoryHandle: dirHandle, // Store the directory handle
+        gitService, // Store the git service
+        gitStatus // Store the git status
       };
 
       onDirectorySelect(directory);
@@ -137,6 +155,10 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
             <li>• Directory must contain at least one <code className="bg-gray-800 px-1 rounded">.yaml</code> or <code className="bg-gray-800 px-1 rounded">.yml</code> file</li>
             <li>• Files will be loaded using the browser's File System Access API</li>
             <li>• Changes will be written directly back to the original files</li>
+            <li className="flex items-center space-x-1">
+              <GitBranch className="w-4 h-4" />
+              <span>• Git repository support for version control</span>
+            </li>
           </ul>
         </div>
       </div>

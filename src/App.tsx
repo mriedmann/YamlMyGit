@@ -116,6 +116,20 @@ function App() {
     });
   };
 
+  const handleGitStatusUpdate = async () => {
+    if (!currentDirectory?.gitService) return;
+    
+    try {
+      const newGitStatus = await currentDirectory.gitService.getStatus();
+      setCurrentDirectory(prev => {
+        if (!prev) return prev;
+        return { ...prev, gitStatus: newGitStatus };
+      });
+    } catch (error) {
+      console.error('Error updating git status:', error);
+    }
+  };
+
   const handleDiscardChanges = () => {
     // Reset file status
     setFileStatus({
@@ -217,10 +231,10 @@ function App() {
         selectedFile={selectedFile}
         onFileChange={handleFileChange}
         fileStatus={fileStatus}
-        onFileStatusChange={setFileStatus}
         onApproveChanges={handleApproveChanges}
         onDiscardChanges={handleDiscardChanges}
         onDiscardFile={handleDiscardFile}
+        onGitStatusUpdate={handleGitStatusUpdate}
       />
     </div>
   );

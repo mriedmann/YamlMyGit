@@ -7,5 +7,16 @@ export default defineConfig({
   base: process.env.NODE_ENV === 'production' ? '/YamlMyGit/' : '/',
   optimizeDeps: {
     exclude: ['lucide-react'],
+    include: ['buffer', 'process'],
+  },
+  define: {
+    global: 'globalThis',
+  },
+  resolve: {
+    alias: {
+      buffer: 'buffer',
+      process: 'process/browser',
+      util: 'util',
+    },
   },
 });
