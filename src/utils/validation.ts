@@ -1,9 +1,9 @@
 import { JsonSchema, SchemaProperty, ValidationError } from '../types';
 
-export const validateAgainstSchema = (data: any, schema: JsonSchema): ValidationError[] => {
+export const validateAgainstSchema = (data: Record<string, unknown>, schema: JsonSchema): ValidationError[] => {
   const errors: ValidationError[] = [];
 
-  const validateValue = (value: any, property: SchemaProperty, path: string) => {
+  const validateValue = (value: unknown, property: SchemaProperty, path: string) => {
     // Check required fields
     if (value === undefined || value === null || value === '') {
       return; // Handle required validation at object level
@@ -82,7 +82,7 @@ export const validateAgainstSchema = (data: any, schema: JsonSchema): Validation
           }
           
           // Validate existing properties
-          Object.entries(value).forEach(([key, val]) => {
+          Object.entries(value as Record<string, unknown>).forEach(([key, val]) => {
             if (property.properties![key]) {
               validateValue(val, property.properties![key], `${path}.${key}`);
             }

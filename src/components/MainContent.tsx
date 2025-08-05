@@ -2,14 +2,13 @@ import React, { useState } from 'react';
 import { FileEditor } from './FileEditor';
 import { DiffViewer } from './DiffViewer';
 import { ApprovalPanel } from './ApprovalPanel';
-import { LocalDirectory, YamlFile, JsonSchema, FileStatus } from '../types';
+import { LocalDirectory, YamlFile, FileStatus } from '../types';
 
 interface MainContentProps {
   directory: LocalDirectory | null;
   selectedFile: YamlFile | null;
-  onFileChange: (fileId: string, content: any) => void;
+  onFileChange: (fileId: string, content: string) => void;
   fileStatus: FileStatus;
-  onFileStatusChange: (status: FileStatus) => void;
   onApproveChanges: () => void;
   onDiscardChanges: () => void;
   onDiscardFile?: (fileId: string) => void;
@@ -22,7 +21,6 @@ export const MainContent: React.FC<MainContentProps> = ({
   selectedFile,
   onFileChange,
   fileStatus,
-  onFileStatusChange,
   onApproveChanges,
   onDiscardChanges,
   onDiscardFile

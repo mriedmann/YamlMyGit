@@ -40,7 +40,7 @@ export interface SchemaProperty {
   items?: SchemaProperty;
   properties?: Record<string, SchemaProperty>;
   required?: string[];
-  default?: any;
+  default?: string | number | boolean | string[] | Record<string, unknown>;
   format?: string;
   minimum?: number;
   maximum?: number;

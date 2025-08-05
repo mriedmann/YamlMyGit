@@ -1,5 +1,5 @@
 import React from 'react';
-import { LocalDirectory, FileStatus } from '../types';
+import { LocalDirectory, FileStatus, YamlFile } from '../types';
 import { computeInlineDiff, DiffLine } from '../utils/diffUtils';
 import { XCircle } from 'lucide-react';
 
@@ -66,7 +66,7 @@ export const DiffViewer: React.FC<DiffViewerProps> = ({
     );
   };
 
-  const renderFileDiff = (file: any) => {
+  const renderFileDiff = (file: YamlFile) => {
     const isNew = file.isNew;
     const content = file.content;
     

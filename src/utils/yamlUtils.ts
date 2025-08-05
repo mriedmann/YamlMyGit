@@ -1,18 +1,18 @@
 import yaml from 'js-yaml';
 
-export const parseYaml = (yamlString: string): any => {
+export const parseYaml = (yamlString: string): Record<string, unknown> => {
   try {
     if (!yamlString || yamlString.trim() === '') {
       return {};
     }
-    return yaml.load(yamlString);
+    return yaml.load(yamlString) as Record<string, unknown>;
   } catch (error) {
     console.error('Error parsing YAML:', error);
     return {};
   }
 };
 
-export const stringifyYaml = (data: any): string => {
+export const stringifyYaml = (data: Record<string, unknown>): string => {
   try {
     return yaml.dump(data, {
       indent: 2,
@@ -26,6 +26,6 @@ export const stringifyYaml = (data: any): string => {
   }
 };
 
-export const formatYamlForDisplay = (data: any): string => {
+export const formatYamlForDisplay = (data: Record<string, unknown>): string => {
   return stringifyYaml(data).trim();
 };

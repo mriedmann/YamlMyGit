@@ -4,8 +4,8 @@ import { SchemaProperty, ValidationError } from '../types';
 interface FormFieldProps {
   name: string;
   property: SchemaProperty;
-  value: any;
-  onChange: (value: any) => void;
+  value: string | number | boolean | string[] | Record<string, unknown> | undefined;
+  onChange: (value: string | number | boolean | string[] | Record<string, unknown>) => void;
   required: boolean;
   errors: ValidationError[];
 }
@@ -104,11 +104,11 @@ export const FormField: React.FC<FormFieldProps> = ({
           </label>
         );
 
-      case 'array':
-        const arrayValue = value || [];
+      case 'array': {
+        const arrayValue = (value as string[]) || [];
         return (
           <div className="space-y-2">
-            {arrayValue.map((item: any, index: number) => (
+            {arrayValue.map((item: string, index: number) => (
               <div key={index} className="flex items-center space-x-2">
                 <input
                   type="text"
@@ -122,7 +122,7 @@ export const FormField: React.FC<FormFieldProps> = ({
                 />
                 <button
                   onClick={() => {
-                    const newArray = arrayValue.filter((_: any, i: number) => i !== index);
+                    const newArray = arrayValue.filter((_: string, i: number) => i !== index);
                     onChange(newArray);
                   }}
                   className="px-2 py-2 bg-red-600 hover:bg-red-700 text-white rounded transition-colors"
@@ -139,6 +139,7 @@ export const FormField: React.FC<FormFieldProps> = ({
             </button>
           </div>
         );
+      }
 
       default:
         return (

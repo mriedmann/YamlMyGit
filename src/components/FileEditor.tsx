@@ -8,7 +8,7 @@ import { parseYaml, stringifyYaml } from '../utils/yamlUtils';
 interface FileEditorProps {
   file: YamlFile | null;
   schema: JsonSchema;
-  onFileChange: (fileId: string, content: any) => void;
+  onFileChange: (fileId: string, content: string) => void;
 }
 
 export const FileEditor: React.FC<FileEditorProps> = ({
@@ -16,7 +16,7 @@ export const FileEditor: React.FC<FileEditorProps> = ({
   schema,
   onFileChange
 }) => {
-  const [content, setContent] = useState<any>({});
+  const [content, setContent] = useState<Record<string, unknown>>({});
   const [yamlContent, setYamlContent] = useState<string>('');
   const [errors, setErrors] = useState<ValidationError[]>([]);
   const [isValid, setIsValid] = useState(true);
@@ -28,7 +28,7 @@ export const FileEditor: React.FC<FileEditorProps> = ({
       const parsedContent = parseYaml(yamlString) || {};
       setContent(parsedContent);
     }
-  }, [file?.id, file?.content]);
+  }, [file]);
 
   useEffect(() => {
     if (file && Object.keys(content).length > 0) {
@@ -38,7 +38,7 @@ export const FileEditor: React.FC<FileEditorProps> = ({
     }
   }, [content, schema, file]);
 
-  const handleFieldChange = (path: string, value: any) => {
+  const handleFieldChange = (path: string, value: string | number | boolean | string[] | Record<string, unknown>) => {
     const newContent = { ...content };
     const pathParts = path.split('.');
     
@@ -47,7 +47,7 @@ export const FileEditor: React.FC<FileEditorProps> = ({
       if (!current[pathParts[i]]) {
         current[pathParts[i]] = {};
       }
-      current = current[pathParts[i]];
+      current = current[pathParts[i]] as Record<string, unknown>;
     }
     
     current[pathParts[pathParts.length - 1]] = value;

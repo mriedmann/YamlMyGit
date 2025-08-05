@@ -1,4 +1,4 @@
-import { LocalDirectory, JsonSchema } from '../types';
+import { LocalDirectory } from '../types';
 import { stringifyYaml } from '../utils/yamlUtils';
 
 export const mockDirectory: LocalDirectory = {

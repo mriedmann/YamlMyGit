@@ -18,7 +18,7 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
       setError(null);
 
       // Use the File System Access API to select a directory
-      const dirHandle = await (window as any).showDirectoryPicker();
+      const dirHandle = await (window as { showDirectoryPicker: () => Promise<FileSystemDirectoryHandle> }).showDirectoryPicker();
       
       // Get directory info
       const directoryInfo = await scanDirectory(dirHandle);
@@ -79,7 +79,7 @@ export const DirectorySelector: React.FC<DirectorySelectorProps> = ({
     }
   };
 
-  const scanDirectory = async (dirHandle: any): Promise<DirectoryInfo> => {
+  const scanDirectory = async (dirHandle: FileSystemDirectoryHandle): Promise<DirectoryInfo> => {
     const yamlFiles: string[] = [];
     let hasSchema = false;
 
